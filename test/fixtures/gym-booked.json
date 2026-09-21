@@ -1,0 +1,10 @@
+{
+  "title": "Grafik zajęć",
+  "url": "https://crossfitwisla.efitness.com.pl/",
+  "expect": {
+    "found": true,
+    "title": "CrossFit Endurance",
+    "start": "2026-09-17T19:00",
+    "end": "2026-09-17T20:00"
+  }
+}

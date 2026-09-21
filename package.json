@@ -1,0 +1,9 @@
+{
+  "name": "page2ics",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "TZ=Europe/Warsaw node --test test/*.test.js",
+    "eval": "node test/eval.js"
+  }
+}

@@ -1,0 +1,7 @@
+model                            tennis-panel         gym-schedule         gym-booked            avg ms   $/call
+anthropic/claude-opus-5          3/3                  3/3                  3/3                     4194   0.0247
+anthropic/claude-haiku-4.5       3/3                  3/3                  3/3                     2476   0.0037
+openai/gpt-5.6-luna              3/3                  3/3                  3/3                     1671   0.0004
+deepseek/deepseek-v4.1-flash     3/3                  3/3                  3/3                     6928   0.0010
+qwen/qwen3.8-flash               3/3                  3/3                  3/3                    22084   0.0010
+z-ai/glm-5.3-flash               3/3                  3/3                  3/3                     4995   0.0007

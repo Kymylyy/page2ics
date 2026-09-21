@@ -1,0 +1,10 @@
+{
+  "title": "Booksy",
+  "url": "https://booksy.com/pl-pl/account/appointment/100000002",
+  "now": "2026-09-16T12:00",
+  "expect": {
+    "found": true,
+    "start": "2026-09-30T14:30",
+    "end": "2026-09-30T15:45"
+  }
+}
