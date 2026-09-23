@@ -1,7 +1,7 @@
 // Extracts the booking from page text via OpenRouter. No chrome.*, so test/eval.js can use it.
 
 const ENDPOINT = 'https://openrouter.ai/api/v1/chat/completions';
-export const DEFAULT_MODEL = 'openai/gpt-5.6-luna';
+export const DEFAULT_MODEL = '~openai/gpt-luna-latest';
 
 const SCHEMA = {
   type: 'object',

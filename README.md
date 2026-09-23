@@ -18,7 +18,7 @@ page text ──▶ 1. precheck (jev) ──▶ 2. extraction (LLM) ──▶ 3.
 ```
 
 1. **Precheck** – [`typesafe/jev-1.13`](https://openrouter.ai/typesafe/jev-1.13), a fast structured-decision model, answers two yes/no questions in ~0.3 s. If the page has neither a date nor anything booking-related, the extension stops here.
-2. **Extraction** – an LLM (`openai/gpt-5.6-luna` by default) returns one event as strict JSON. The central question in the prompt is *"is this slot already the user's, or still up for grabs?"* – a class schedule full of free slots must produce nothing, a customer panel with "your upcoming lessons" must produce the nearest one.
+2. **Extraction** – an LLM (`~openai/gpt-luna-latest` by default – an OpenRouter alias that always points to the newest GPT Luna) returns one event as strict JSON. The central question in the prompt is *"is this slot already the user's, or still up for grabs?"* – a class schedule full of free slots must produce nothing, a customer panel with "your upcoming lessons" must produce the nearest one.
 3. **Verification** – jev checks the extracted event against the page. A cancelled booking blocks the download. Doubt about whether the slot is really yours, or whether the date matches the page, adds a "⚠" note to the event description – the calendar asks you to confirm the event anyway, so a warning beats a refusal.
 4. **Geocoding** – the address goes to Nominatim (OpenStreetMap). Coordinates are used only if the postcode or city from the map matches the address; then Apple Calendar shows a pin and directions.
 5. **`.ics`** – built by hand (RFC 5545), times converted from local wall-clock time to UTC by the JS engine, so daylight saving time is handled.
@@ -59,7 +59,7 @@ Extraction models compared on 2026-09-16 (3 runs per fixture, `test/compare-2026
 | qwen/qwen3.8-flash | 9/9 | 22084 | 0.0010 |
 | z-ai/glm-5.3-flash | 9/9 | 4995 | 0.0007 |
 
-All models got everything right, so the fastest and cheapest one won.
+All models got everything right, so the fastest and cheapest one won. The extension now uses the `~openai/gpt-luna-latest` alias, so it moves to each new Luna automatically – the numbers above are for `gpt-5.6-luna`.
 
 jev answers measured on 2026-09-21 (probability of "yes", one run, ~0.3 s and ~$0.00003 per call):
 
