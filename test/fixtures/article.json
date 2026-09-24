@@ -1,7 +1,5 @@
 {
   "title": "Jak dobrać naciąg do rakiety tenisowej – poradnik",
   "url": "https://example.com/poradniki/naciag-rakiety",
-  "expect": {
-    "found": false
-  }
+  "expect": []
 }

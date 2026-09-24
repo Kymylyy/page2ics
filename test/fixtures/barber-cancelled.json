@@ -2,9 +2,7 @@
   "title": "Booksy",
   "url": "https://booksy.com/pl-pl/account/appointment/100000001",
   "now": "2026-09-16T12:00",
-  "expect": {
-    "found": false
-  },
+  "expect": [],
   "wrongEvent": {
     "title": "Barber – Stary Fotel Barber",
     "start": "2026-09-17T18:00",

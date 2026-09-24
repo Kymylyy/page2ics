@@ -18,10 +18,10 @@ page text ──▶ 1. precheck (jev) ──▶ 2. extraction (LLM) ──▶ 3.
 ```
 
 1. **Precheck** – [`typesafe/jev-1.13`](https://openrouter.ai/typesafe/jev-1.13), a fast structured-decision model, answers two yes/no questions in ~0.3 s. If the page has neither a date nor anything booking-related, the extension stops here.
-2. **Extraction** – an LLM (`~openai/gpt-luna-latest` by default – an OpenRouter alias that always points to the newest GPT Luna) returns one event as strict JSON. The central question in the prompt is *"is this slot already the user's, or still up for grabs?"* – a class schedule full of free slots must produce nothing, a customer panel with "your upcoming lessons" must produce the nearest one.
-3. **Verification** – jev checks the extracted event against the page. A cancelled booking blocks the download. Doubt about whether the slot is really yours, or whether the date matches the page, adds a "⚠" note to the event description – the calendar asks you to confirm the event anyway, so a warning beats a refusal.
+2. **Extraction** – an LLM (`~openai/gpt-luna-latest` by default – an OpenRouter alias that always points to the newest GPT Luna) returns the user's booked events as strict JSON. The central question in the prompt is *"is this slot already the user's, or still up for grabs?"* – a class schedule full of free slots must produce nothing, a customer panel with "your upcoming lessons" must produce all of them.
+3. **Verification** – jev checks each extracted event against the page. A cancelled booking is left out of the file. Doubt about whether the slot is really yours, or whether the date matches the page, adds a "⚠" note to the event description – the calendar asks you to confirm the event anyway, so a warning beats a refusal.
 4. **Geocoding** – the address goes to Nominatim (OpenStreetMap). Coordinates are used only if the postcode or city from the map matches the address; then Apple Calendar shows a pin and directions.
-5. **`.ics`** – built by hand (RFC 5545), times converted from local wall-clock time to UTC by the JS engine, so daylight saving time is handled.
+5. **`.ics`** – built by hand (RFC 5545), one event per booking in a single file, times converted from local wall-clock time to UTC by the JS engine, so daylight saving time is handled.
 
 Both models are called through [OpenRouter](https://openrouter.ai) with a single API key. jev runs on OpenRouter's Decisions API, which is in alpha; if it fails, steps 1 and 3 are skipped and the extension works without them.
 
@@ -46,7 +46,7 @@ OPENROUTER_API_KEY=... npm run eval                          # real models on al
 OPENROUTER_API_KEY=... MODELS=a/b,c/d RUNS=3 npm run eval    # model comparison: hits, time, cost
 ```
 
-Fixtures in `test/fixtures/` are text dumps of real booking pages with all personal and business details replaced by fictional ones: a tennis club customer panel, a confirmed and a cancelled barber appointment, a gym schedule with and without a booking, and an article with no date at all.
+Fixtures in `test/fixtures/` are text dumps of real booking pages with all personal and business details replaced by fictional ones: a tennis club customer panel, a gym panel with two bookings, a confirmed and a cancelled barber appointment, a gym schedule with and without a booking, and an article with no date at all.
 
 Extraction models compared on 2026-09-16 (3 runs per fixture, `test/compare-2026-09-16.txt`):
 

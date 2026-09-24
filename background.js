@@ -61,27 +61,39 @@ chrome.action.onClicked.addListener(async (tab) => {
       notify('No date or booking found on this page.');
       return;
     }
-    const { event: ev } = await extract(page, apiKey);
-    if (!ev.found) {
+    const { events } = await extract(page, apiKey);
+    if (!events.length) {
       notify('No booking of yours found on this page.');
       return;
     }
-    const [geo, check] = await Promise.all([
-      geocode(ev.address).catch(() => null),
-      verify(page, ev, apiKey).catch(() => null),
-    ]);
-    if (check?.answers.cancelled > YES) {
-      notify('This booking looks cancelled.');
+    // One Nominatim request per distinct address – several bookings are usually at the same place.
+    const geos = new Map();
+    const geocodeOnce = (address) => {
+      if (!geos.has(address)) geos.set(address, geocode(address).catch(() => null));
+      return geos.get(address);
+    };
+    const checked = await Promise.all(events.map(async (ev) => {
+      const [geo, check] = await Promise.all([
+        geocodeOnce(ev.address),
+        verify(page, ev, apiKey).catch(() => null),
+      ]);
+      return { ev, geo, check };
+    }));
+    const active = checked.filter(({ check }) => !(check?.answers.cancelled > YES));
+    if (!active.length) {
+      notify(events.length > 1 ? 'These bookings look cancelled.' : 'This booking looks cancelled.');
       return;
     }
-    const notes = [];
-    if (ev.address && !geo) notes.push('⚠ Address not verified on the map');
-    if (check && check.answers.is_users < YES) notes.push('⚠ Not sure this is your booking rather than an open slot');
-    if (check && check.answers.date_matches < YES) notes.push('⚠ Date or time may not match the page – please check');
-    const ics = buildIcs({ ...ev, geo, description: [ev.source_quote, page.url, ...notes].join('\n\n') });
+    const ics = buildIcs(active.map(({ ev, geo, check }) => {
+      const notes = [];
+      if (ev.address && !geo) notes.push('⚠ Address not verified on the map');
+      if (check && check.answers.is_users < YES) notes.push('⚠ Not sure this is your booking rather than an open slot');
+      if (check && check.answers.date_matches < YES) notes.push('⚠ Date or time may not match the page – please check');
+      return { ...ev, geo, description: [ev.source_quote, page.url, ...notes].join('\n\n') };
+    }));
     await chrome.downloads.download({
       url: 'data:text/calendar;charset=utf-8,' + encodeURIComponent(ics),
-      filename: fileName(ev.title),
+      filename: fileName(active[0].ev.title),
     });
   } catch (e) {
     notify(`Error: ${e.message}`);

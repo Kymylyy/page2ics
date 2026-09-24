@@ -1,9 +1,7 @@
 {
   "title": "Grafik zajęć",
   "url": "https://crossfitwisla.efitness.com.pl/",
-  "expect": {
-    "found": false
-  },
+  "expect": [],
   "wrongEvent": {
     "title": "CrossFit – CrossFit Wisła",
     "start": "2026-09-14T06:00",

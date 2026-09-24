@@ -36,13 +36,13 @@ const opts = { now: new Date('2026-09-16T12:00:00Z'), uid: 'test-uid' };
 const unfold = (ics) => ics.replace(/\r\n /g, '');
 
 test('buildIcs: gym booking, no coordinates', () => {
-  assert.equal(buildIcs(crossfit, opts), [
+  assert.equal(buildIcs([crossfit], opts), [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
     'PRODID:-//page2ics//EN',
     'METHOD:PUBLISH',
     'BEGIN:VEVENT',
-    'UID:test-uid',
+    'UID:test-uid-0',
     'DTSTAMP:20260916T120000Z',
     'DTSTART:20260917T170000Z',
     'DTEND:20260917T180000Z',
@@ -56,7 +56,7 @@ test('buildIcs: gym booking, no coordinates', () => {
 });
 
 test('buildIcs: coordinates add GEO and the Apple structured location', () => {
-  const ics = unfold(buildIcs({ ...crossfit, geo: { lat: '50.0614', lon: '19.9366' } }, opts));
+  const ics = unfold(buildIcs([{ ...crossfit, geo: { lat: '50.0614', lon: '19.9366' } }], opts));
   assert.ok(ics.includes('\r\nGEO:50.0614;19.9366\r\n'));
   assert.ok(ics.includes(
     '\r\nX-APPLE-STRUCTURED-LOCATION;VALUE=URI;X-APPLE-RADIUS=100;X-TITLE="CrossFit Wisła\\nNadrzeczna 5, 30-003 Kraków":geo:50.0614,19.9366\r\n',
@@ -64,18 +64,26 @@ test('buildIcs: coordinates add GEO and the Apple structured location', () => {
 });
 
 test('buildIcs: without an address LOCATION is just the venue; without both there is no LOCATION', () => {
-  assert.ok(buildIcs({ ...crossfit, address: '' }, opts).includes('\r\nLOCATION:CrossFit Wisła\r\n'));
-  assert.ok(!buildIcs({ ...crossfit, venue: '', address: '' }, opts).includes('LOCATION'));
+  assert.ok(buildIcs([{ ...crossfit, address: '' }], opts).includes('\r\nLOCATION:CrossFit Wisła\r\n'));
+  assert.ok(!buildIcs([{ ...crossfit, venue: '', address: '' }], opts).includes('LOCATION'));
 });
 
 test('buildIcs: semicolons, commas and backslashes in text are escaped', () => {
-  const ics = buildIcs({ ...crossfit, title: 'Cut; beard, wash \\ dry' }, opts);
+  const ics = buildIcs([{ ...crossfit, title: 'Cut; beard, wash \\ dry' }], opts);
   assert.ok(ics.includes('\r\nSUMMARY:Cut\\; beard\\, wash \\\\ dry\r\n'));
 });
 
 test('buildIcs: long lines are folded and can be unfolded back', () => {
   const title = 'x'.repeat(200);
-  const ics = buildIcs({ title, start: '2026-09-17T19:00', end: '2026-09-17T20:00' }, { uid: 'u' });
+  const ics = buildIcs([{ title, start: '2026-09-17T19:00', end: '2026-09-17T20:00' }], { uid: 'u' });
   for (const line of ics.split('\r\n')) assert.ok(line.length <= 74, `line too long: ${line.length}`);
   assert.ok(unfold(ics).includes(`SUMMARY:${title}`));
+});
+
+test('buildIcs: several events go into one calendar, each with its own UID', () => {
+  const ics = buildIcs([crossfit, { ...crossfit, start: '2026-09-19T09:00', end: '2026-09-19T10:00' }], opts);
+  assert.equal(ics.match(/BEGIN:VCALENDAR/g).length, 1);
+  assert.equal(ics.match(/BEGIN:VEVENT/g).length, 2);
+  assert.ok(ics.includes('\r\nUID:test-uid-0\r\n') && ics.includes('\r\nUID:test-uid-1\r\n'));
+  assert.ok(ics.includes('\r\nDTSTART:20260919T070000Z\r\n'));
 });

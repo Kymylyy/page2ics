@@ -28,12 +28,21 @@ function fold(line) {
   return out.join('\r\n');
 }
 
-export function buildIcs(ev, { now = new Date(), uid = crypto.randomUUID() } = {}) {
+// One VCALENDAR with a VEVENT per event; UIDs are "<uid>-<index>".
+export function buildIcs(events, { now = new Date(), uid = crypto.randomUUID() } = {}) {
   const lines = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
     'PRODID:-//page2ics//EN',
     'METHOD:PUBLISH',
+    ...events.flatMap((ev, i) => vevent(ev, now, `${uid}-${i}`)),
+    'END:VCALENDAR',
+  ];
+  return lines.map(fold).join('\r\n') + '\r\n';
+}
+
+function vevent(ev, now, uid) {
+  const lines = [
     'BEGIN:VEVENT',
     `UID:${uid}`,
     `DTSTAMP:${utcStamp(now)}`,
@@ -51,6 +60,6 @@ export function buildIcs(ev, { now = new Date(), uid = crypto.randomUUID() } = {
     lines.push(`X-APPLE-STRUCTURED-LOCATION;VALUE=URI;X-APPLE-RADIUS=100;X-TITLE="${title}":geo:${ev.geo.lat},${ev.geo.lon}`);
   }
   if (ev.description) lines.push(`DESCRIPTION:${esc(ev.description)}`);
-  lines.push('END:VEVENT', 'END:VCALENDAR');
-  return lines.map(fold).join('\r\n') + '\r\n';
+  lines.push('END:VEVENT');
+  return lines;
 }

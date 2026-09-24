@@ -3,10 +3,9 @@
 const ENDPOINT = 'https://openrouter.ai/api/v1/chat/completions';
 export const DEFAULT_MODEL = '~openai/gpt-luna-latest';
 
-const SCHEMA = {
+const EVENT = {
   type: 'object',
   properties: {
-    found: { type: 'boolean', description: 'true only if the page contains a slot the user IS booked for' },
     title: { type: 'string', description: 'Pattern "Activity – Place", 2–5 words' },
     start: { type: 'string', description: 'Local time without a zone, format YYYY-MM-DDTHH:MM' },
     end: { type: 'string', description: 'Local time without a zone, format YYYY-MM-DDTHH:MM' },
@@ -14,7 +13,16 @@ const SCHEMA = {
     address: { type: 'string', description: 'Bare postal address: street number, postcode city' },
     source_quote: { type: 'string', description: 'Verbatim fragment of the page the date and time were taken from' },
   },
-  required: ['found', 'title', 'start', 'end', 'venue', 'address', 'source_quote'],
+  required: ['title', 'start', 'end', 'venue', 'address', 'source_quote'],
+  additionalProperties: false,
+};
+
+const SCHEMA = {
+  type: 'object',
+  properties: {
+    events: { type: 'array', items: EVENT, description: 'Only slots the user IS booked for; empty if there are none' },
+  },
+  required: ['events'],
   additionalProperties: false,
 };
 
@@ -22,7 +30,7 @@ const SCHEMA = {
 function systemPrompt(now) {
   const today = now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
   const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-  return `From the text of a web page or an email you extract ONE calendar event: the slot the user is signed up for, has booked, or has had confirmed. The page may be in any language (often Polish).
+  return `From the text of a web page or an email you extract calendar events: the slots the user is signed up for, has booked, or has had confirmed. The page may be in any language (often Polish).
 
 Today is ${today}, time zone ${tz}.
 
@@ -33,8 +41,8 @@ The key question: is this slot ALREADY the user's, or is it still up for grabs?
 The page title and URL are hints too (e.g. "upcoming", "my_bookings", "client_panel").
 
 Rules:
-1. If the page is only an offer or a schedule without a slot of the user's, return found: false and leave the other fields empty. Never pick a slot from an offer.
-2. If the user has several upcoming slots, take the nearest one in time.
+1. If the page is only an offer or a schedule without a slot of the user's, return an empty events list. Never pick a slot from an offer.
+2. If the user has several upcoming slots, return each of them once, in chronological order. The same slot may appear twice on the page (in the list of bookings and in the schedule) – it is still one event.
 3. Resolve relative dates ("dzisiaj" = today, "jutro" = tomorrow, "w czwartek" = on Thursday) against today's date.
 4. Write times as local wall-clock time without a zone, format YYYY-MM-DDTHH:MM.
 5. The duration and the address often sit elsewhere on the page than the line with the slot itself (a schedule cell, the footer) – look for them in the whole text. If there is no duration, assume 60 minutes.
@@ -66,5 +74,5 @@ export async function extract(page, apiKey, { now = new Date(), model = DEFAULT_
   });
   if (!res.ok) throw new Error(`OpenRouter ${res.status}: ${(await res.text()).slice(0, 200)}`);
   const data = await res.json();
-  return { event: parseJson(data.choices[0].message.content), usage: data.usage };
+  return { events: parseJson(data.choices[0].message.content).events, usage: data.usage };
 }
