@@ -37,7 +37,7 @@ Today is ${today}, time zone ${tz}.
 The key question: is this slot ALREADY the user's, or is it still up for grabs?
 - ALREADY THEIRS (what you are looking for): a booking confirmation, "Jesteś zapisany na" (you are signed up for), "Twoja rezerwacja" (your booking), "Odwołaj rezerwację" (cancel booking), a booking number – but also a customer panel listing their upcoming classes ("Najbliższe lekcje", "Moje rezerwacje", "Twoje wizyty", a logged-in page showing the user's name). Such a list is a list of THEIR slots, even if the word "booked" never appears.
 - UP FOR GRABS (ignore): a schedule or an offer with free places, "Zapisz się" (sign up), "Zarezerwuj" (book), "Wybierz termin" (pick a slot), a price list. You can tell by many equivalent slots and counts of free places.
-- CANCELLED (ignore): a booking marked "Anulowana" or "Odwołana" is no longer the user's.
+- CANCELLED (ignore): a booking marked "Anulowana" or "Odwołana", or one the user has reported an absence for ("Zgłoszona nieobecność", "Nieobecność"), is no longer the user's.
 The page title and URL are hints too (e.g. "upcoming", "my_bookings", "client_panel").
 
 Rules:

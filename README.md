@@ -6,7 +6,7 @@ You book a haircut, a tennis court or a gym class. The confirmation page shows t
 
 page2ics is a small Chrome extension that fixes this. Click its icon on the booking page (or on an open confirmation email) and you get an `.ics` file with the title, time, place and map pin already filled in. Open it and your calendar asks you to confirm the event.
 
-It reads the page text, not the HTML, so it needs no per-site integration. It was built and tested on Polish booking sites, which shows it is not tied to English pages.
+It reads the page text, not the HTML, so it needs no per-site integration. The only formatting it looks at is strike-through: a crossed-out old date after a reschedule is dropped before the text is read. It was built and tested on Polish booking sites, which shows it is not tied to English pages.
 
 ## How it works
 
@@ -19,7 +19,7 @@ page text ──▶ 1. precheck (jev) ──▶ 2. extraction (LLM) ──▶ 3.
 
 1. **Precheck** – [`typesafe/jev-1.13`](https://openrouter.ai/typesafe/jev-1.13), a fast structured-decision model, answers two yes/no questions in ~0.3 s. If the page has neither a date nor anything booking-related, the extension stops here.
 2. **Extraction** – an LLM (`~openai/gpt-luna-latest` by default – an OpenRouter alias that always points to the newest GPT Luna) returns the user's booked events as strict JSON. The central question in the prompt is *"is this slot already the user's, or still up for grabs?"* – a class schedule full of free slots must produce nothing, a customer panel with "your upcoming lessons" must produce all of them.
-3. **Verification** – jev checks each extracted event against the page. A cancelled booking is left out of the file. Doubt about whether the slot is really yours, or whether the date matches the page, adds a "⚠" note to the event description – the calendar asks you to confirm the event anyway, so a warning beats a refusal.
+3. **Verification** – jev checks each extracted event against the page. A cancelled booking, or one you have reported an absence for, is left out of the file. Doubt about whether the slot is really yours, or whether the date matches the page, adds a "⚠" note to the event description – the calendar asks you to confirm the event anyway, so a warning beats a refusal.
 4. **Geocoding** – the address goes to Nominatim (OpenStreetMap). Coordinates are used only if the postcode or city from the map matches the address; then Apple Calendar shows a pin and directions.
 5. **`.ics`** – built by hand (RFC 5545), one event per booking in a single file, times converted from local wall-clock time to UTC by the JS engine, so daylight saving time is handled.
 
@@ -46,7 +46,7 @@ OPENROUTER_API_KEY=... npm run eval                          # real models on al
 OPENROUTER_API_KEY=... MODELS=a/b,c/d RUNS=3 npm run eval    # model comparison: hits, time, cost
 ```
 
-Fixtures in `test/fixtures/` are text dumps of real booking pages with all personal and business details replaced by fictional ones: a tennis club customer panel, a gym panel with two bookings, a confirmed and a cancelled barber appointment, a gym schedule with and without a booking, and an article with no date at all.
+Fixtures in `test/fixtures/` are text dumps of real booking pages with all personal and business details replaced by fictional ones: a tennis club customer panel, the same panel with a rescheduled lesson and a reported absence, a gym panel with two bookings, a confirmed and a cancelled barber appointment, a gym schedule with and without a booking, and an article with no date at all.
 
 Extraction models compared on 2026-09-16 (3 runs per fixture, `test/compare-2026-09-16.txt`):
 

@@ -21,8 +21,8 @@ const VERIFY = {
     type: 'noul',
     instructions: 'According to the page, has the reservation described in extracted_event been cancelled or called off?',
     criteria: {
-      true: 'The page marks this reservation as cancelled (Polish: "Anulowana", "Odwołana").',
-      false: 'The reservation is active. A button that merely offers to cancel it ("Odwołaj rezerwację", "Anuluj") does not make it cancelled.',
+      true: 'The page marks this reservation as cancelled (Polish: "Anulowana", "Odwołana") or as an absence the user has reported (Polish: "Zgłoszona nieobecność").',
+      false: 'The reservation is active. A button that merely offers to cancel it ("Odwołaj rezerwację", "Anuluj", "Zgłoś nieobecność") does not make it cancelled, and neither does a make-up class ("Odrabianie") or an absence reported for a different slot.',
     },
   },
   is_users: {

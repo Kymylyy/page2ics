@@ -10,12 +10,19 @@ const STRONG_NO = 0.2;
 const YES = 0.5;
 
 // Runs in the page context – must not reference anything from this module.
+// Struck-through text (an old date after a reschedule, a cancelled slot) is hidden before reading the text,
+// otherwise innerText shows it side by side with the current value.
 function grabPage(maxChars) {
   const selected = window.getSelection()?.toString().trim();
+  const struck = [...document.body.querySelectorAll('*')].filter((el) => getComputedStyle(el).textDecorationLine.includes('line-through'));
+  const display = struck.map((el) => el.style.display);
+  struck.forEach((el) => { el.style.display = 'none'; });
+  const text = document.body.innerText;
+  struck.forEach((el, i) => { el.style.display = display[i]; });
   return {
     title: document.title,
     url: location.href,
-    text: (selected || document.body.innerText).slice(0, maxChars),
+    text: (selected || text).slice(0, maxChars),
   };
 }
 
